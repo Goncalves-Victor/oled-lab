@@ -1,0 +1,673 @@
+/* ==========================================================================
+   global.css
+   Layout responsivo e visual amigavel para criancas.
+   Desktop: editor | tela | ajuda.  Celular: tela no topo, depois o resto.
+   ========================================================================== */
+
+:root {
+  --bg: #0f1220;
+  --panel: #1a1f35;
+  --panel-2: #232a47;
+  --border: #313a5e;
+  --text: #e7ecff;
+  --muted: #9aa6c9;
+  --accent: #4f8cff;
+  --accent-2: #36d39a;
+  --danger: #ff6b6b;
+  --warn: #ffce5a;
+  --radius: 14px;
+  --mono: 'SF Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  background: radial-gradient(1200px 600px at 70% -10%, #1b2347 0%, transparent 60%), var(--bg);
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100%;
+}
+
+/* ---------- Cabecalho ---------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 6px 16px;
+  flex-wrap: wrap;
+}
+.app-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.app-header h1 {
+  margin: 0;
+  font-size: 34px;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.subtitle { color: var(--muted); font-size: 14px; }
+
+/* Botoes-icone do cabecalho (lapis + engrenagem) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  background: transparent;
+  color: var(--text);
+  border: 0px ;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .08s ease, background .15s ease, border-color .15s ease;
+}
+.icon-btn:hover { background: #2b3358; transform: translateY(-1px); border-color: var(--accent); }
+.header-pencil { align-self: center; width: 32px; height: 32px; font-size: 15px; }
+
+/* ---------- Layout em 3 colunas ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.1fr) minmax(280px, 0.9fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.col {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  min-width: 0; /* deixa as colunas encolherem dentro do grid */
+}
+.col-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* ---------- Cabecalho do painel (alca de arrastar) ---------- */
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  cursor: grab;
+  user-select: none;
+  border-radius: 8px;
+  padding: 2px 4px;
+  margin-left: -4px;
+  transition: background .15s ease;
+}
+.panel-head:hover { background: var(--panel-2); }
+.panel-head:active { cursor: grabbing; }
+.panel-grip { color: var(--muted); font-size: 14px; letter-spacing: -2px; }
+
+/* Painel sendo arrastado fica esmaecido. */
+.col-dragging { opacity: .45; }
+
+/* Barra que mostra onde o painel vai cair. */
+.drop-bar {
+  position: absolute;
+  background: var(--accent);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 8;
+  box-shadow: 0 0 8px var(--accent);
+}
+.drop-bar-left   { left: -3px;  top: 6px; bottom: 6px; width: 5px; }
+.drop-bar-right  { right: -3px; top: 6px; bottom: 6px; width: 5px; }
+.drop-bar-above  { top: -3px;    left: 6px; right: 6px; height: 5px; }
+.drop-bar-below  { bottom: -3px; left: 6px; right: 6px; height: 5px; }
+
+/* ---------- Coluna (pilha de paineis) ---------- */
+.layout-col {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ---------- Alca de redimensionamento entre colunas ---------- */
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -10px;
+  width: 16px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+.col-resizer::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+  height: 42px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background .15s ease, height .15s ease;
+}
+.col-resizer:hover::after { background: var(--accent); height: 60px; }
+.col-subtitle {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- Editor ---------- */
+.editor-outer { display: flex; flex-direction: column; gap: 6px; }
+.editor-topbar { display: flex; justify-content: flex-end; }
+.editor-clear-btn {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.editor-clear-btn:hover {
+  background: #3a1414;
+  color: #ffc9c9;
+  border-color: var(--danger);
+}
+.editor-wrap {
+  display: flex;
+  background: #0c0f1c;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  height: 360px;
+}
+.editor-gutter {
+  flex: 0 0 auto;
+  padding: 10px 0;
+  background: #0a0d18;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  user-select: none;
+}
+
+.gutter-line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: calc(13px * 1.5); /* deve casar com LINE_H em CodeEditor.tsx */
+  padding: 0 8px 0 6px;
+  cursor: grab;
+  transition: background .1s ease;
+}
+.gutter-line:hover { background: rgba(79,140,255,.12); }
+.gutter-line:active { cursor: grabbing; }
+
+/* Alca visual: icone braille que sugere agarre */
+.gutter-grip {
+  color: #3a4468;
+  font-size: 12px;
+  letter-spacing: -1px;
+  transition: color .1s ease;
+}
+.gutter-line:hover .gutter-grip { color: var(--accent); }
+
+.gutter-num {
+  color: #54608a;
+  min-width: 18px;
+  text-align: right;
+}
+
+/* Seta de dobra do bloco de desenho */
+.gutter-fold {
+  background: transparent;
+  border: 0;
+  color: var(--accent-2);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  width: 12px;
+  line-height: 1;
+}
+.gutter-fold:hover { color: var(--text); }
+
+/* Linha sendo arrastada: esmaece */
+.gutter-line-dragging { opacity: .35; }
+.gutter-line-dragging .gutter-grip { color: var(--accent); }
+
+/* Barras indicadoras de onde a linha vai cair */
+.gutter-line-drop-above::before,
+.gutter-line-drop-below::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 4;
+}
+.gutter-line-drop-above::before { top: -1px; }
+.gutter-line-drop-below::after  { bottom: -1px; }
+.editor-textarea {
+  flex: 1 1 auto;
+  padding: 10px 12px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* ---------- Exemplos ---------- */
+.examples-wrap { display: flex; flex-direction: column; gap: 10px; }
+.examples { display: flex; flex-wrap: wrap; gap: 8px; }
+.examples-subtitle { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.examples-divider { width: 100%; height: 0; border: 0; border-top: 1px dashed var(--border); margin: 4px 0 2px; }
+.examples-empty { margin: 2px 0; font-size: 12px; color: var(--muted); opacity: .8; }
+.example-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform .08s ease, background .15s ease;
+}
+.example-btn:hover { background: #2b3358; transform: translateY(-1px); }
+.example-badge { color: var(--accent-2); font-size: 12px; }
+
+/* Exemplos do aluno: pilula com botao de remover. */
+.example-chip { display: inline-flex; align-items: stretch; }
+.example-btn-custom {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+}
+.example-del {
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.example-del:hover { background: #3a1414; color: #ffc9c9; }
+
+.example-add {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--accent-2);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.example-add:hover { background: #103a2c; border-color: var(--accent-2); }
+
+/* ---------- Tela OLED ---------- */
+.col-screen { display: flex; flex-direction: column; }
+.screen-box {
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+  background: #05070f;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.oled-canvas {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  image-rendering: pixelated; /* mantem os pixels nitidos ao ampliar */
+  border-radius: 6px;
+  touch-action: none;
+}
+.coord-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 2px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+.status-pill {
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.status-running { color: #06210f; background: var(--accent-2); border-color: transparent; }
+.status-paused { color: #2a2200; background: var(--warn); border-color: transparent; }
+.status-error { color: #2a0000; background: var(--danger); border-color: transparent; }
+.status-done { color: var(--accent); border-color: var(--accent); }
+
+/* ---------- Toolbar ---------- */
+.toolbar { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.toolbar-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .08s ease, background .15s ease, opacity .15s ease;
+}
+.btn:hover:not(:disabled) { background: #2b3358; transform: translateY(-1px); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn-primary { background: var(--accent); border-color: transparent; color: #04122e; }
+.btn-primary:hover:not(:disabled) { background: #6aa0ff; }
+.btn-ghost { background: transparent; }
+
+.select {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+  margin-left: 6px;
+}
+.speed-label, .check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.check-label input { width: 18px; height: 18px; }
+
+/* ---------- Mensagens ---------- */
+.message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: var(--mono);
+}
+.message-info { background: #16233f; color: var(--text); }
+.message-success { background: #103a2c; color: #b6f5dc; }
+.message-error { background: #3a1414; color: #ffc9c9; }
+
+/* ---------- Ajuda / documentacao ---------- */
+.help-collapse > summary { cursor: pointer; list-style: none; }
+.help-collapse > summary::-webkit-details-marker { display: none; }
+
+/* Filtros por categoria */
+.help-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.help-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.help-filter:hover { background: #2b3358; color: var(--text); }
+.help-filter-active { background: var(--accent); color: #04122e; border-color: transparent; font-weight: 600; }
+.help-filter-count {
+  font-size: 10px;
+  background: rgba(0,0,0,.18);
+  border-radius: 999px;
+  padding: 0 5px;
+}
+.help-filter-active .help-filter-count { background: rgba(0,0,0,.25); }
+
+/* Tag de categoria no cartao */
+.help-summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.help-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.help-tag-Controle { color: #ffce5a; border-color: #6b5a1f; }
+.help-tag-Formas { color: #6aa0ff; border-color: #2f4d8a; }
+.help-tag-Texto { color: #36d39a; border-color: #1f6b50; }
+.help-tag-Estilo { color: #ff8db4; border-color: #7a2f4d; }
+
+.help-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 70vh; overflow: auto; }
+.help-card {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 10px;
+}
+.help-summary {
+  cursor: pointer;
+  padding: 8px 0;
+  list-style: none;
+}
+.help-summary::-webkit-details-marker { display: none; }
+.help-summary code { color: var(--accent-2); font-family: var(--mono); font-size: 13px; }
+.help-body { padding: 0 0 10px; }
+.help-desc { margin: 4px 0 8px; color: var(--text); font-size: 13px; }
+.help-params { margin: 0 0 10px; padding-left: 18px; color: var(--muted); font-size: 13px; }
+.help-params strong { color: var(--text); }
+.help-example {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0c0f1c;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+.help-example code { flex: 1; color: #cdd7ff; font-family: var(--mono); font-size: 12px; word-break: break-all; }
+.mini-btn {
+  background: var(--accent);
+  color: #04122e;
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---------- Modal de exportacao .ino ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 14, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.modal {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.modal-title { margin: 0; font-size: 18px; }
+.modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+
+.modal-pins {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.pins-label { font-weight: 600; color: var(--text); }
+.pin-field { display: inline-flex; align-items: center; gap: 6px; }
+.pin-field input {
+  width: 60px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 14px;
+}
+.pins-hint { font-size: 12px; opacity: .8; }
+
+.ino-code {
+  flex: 1;
+  overflow: auto;
+  margin: 0 0 14px;
+  background: #0c0f1c;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.ino-code code { color: #cdd7ff; }
+.ino-line { white-space: pre; }
+.ino-hl {
+  background: rgba(54, 211, 154, 0.14);
+  border-left: 3px solid var(--accent-2);
+  margin-left: -12px;
+  padding-left: 9px;
+  color: #d6ffe9;
+  font-weight: 600;
+}
+
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.modal-sm { width: min(440px, 100%); }
+.modal-draw {
+  width: min(1020px, 96vw);
+  max-height: 94vh;
+  min-width: 420px;
+  min-height: 400px;
+  resize: both;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Configuracoes (tamanho da tela) ---------- */
+.settings-label { margin: 8px 0 6px; font-size: 13px; color: var(--muted); }
+.settings-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.preset-btn {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.preset-btn:hover { background: #2b3358; }
+.preset-btn-active { border-color: var(--accent); color: var(--accent); }
+.settings-custom { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.settings-x { color: var(--muted); }
+.settings-warn { font-size: 12px; color: var(--warn); margin: 14px 0; }
+
+/* ---------- Ferramenta de desenho ---------- */
+.draw-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.draw-count { margin-left: auto; font-size: 13px; color: var(--muted); font-family: var(--mono); }
+.draw-canvas-box {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: #05070f;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.draw-canvas {
+  image-rendering: pixelated;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: crosshair;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   RESPONSIVO (celular): uma coluna so; alcas/botoes de mover ja somem via JS.
+   ========================================================================== */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr !important;
+  }
+  .app-header h1 { font-size: 28px; }
+  .editor-wrap { height: 280px; }
+}

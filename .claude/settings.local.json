@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node scripts/gen-examples.mjs)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"5174 HTTP %{http_code}\\\\n\" http://localhost:5174/)",
+      "Bash(curl -s http://localhost:5174/src/main.tsx)",
+      "PowerShell($p = \\(Get-NetTCPConnection -LocalPort 5174 -State Listen -ErrorAction SilentlyContinue\\).OwningProcess; if \\($p\\) { Stop-Process -Id $p -Force; \"Encerrado PID $p \\(porta 5174\\)\" } else { \"Nada na 5174\" })"
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "oled-lab",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Simulador didatico de tela OLED SSD1306 (Adafruit_GFX) para alunos de robotica.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "gen:examples": "node scripts/gen-examples.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4"
+  }
+}
