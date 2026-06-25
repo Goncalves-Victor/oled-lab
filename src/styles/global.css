@@ -83,6 +83,25 @@ body {
 .icon-btn:hover { background: #2b3358; transform: translateY(-1px); border-color: var(--accent); }
 .header-pencil { align-self: center; width: 32px; height: 32px; font-size: 15px; }
 
+/* ---------- Nome do aluno (sincroniza "Meus exemplos" na nuvem) ---------- */
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.name-field { display: flex; align-items: center; gap: 8px; }
+.name-input {
+  width: 150px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.name-input:focus { border-color: var(--accent); }
+.name-input::placeholder { color: var(--muted); }
+.cloud-status { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.cloud-status-error { color: var(--danger); }
+.cloud-status-saved { color: var(--accent-2); }
+
 /* ---------- Layout em 3 colunas ---------- */
 .layout {
   display: grid;

@@ -1,28 +1,34 @@
 // ============================================================================
 // DrawModal.tsx
 // ----------------------------------------------------------------------------
-// Ferramenta de desenho: uma tela OLED em branco onde o aluno pinta pixels com
-// o mouse/toque. Ao concluir, gera os comandos display.drawPixel(...) e devolve
-// um BLOCO de codigo (delimitado por marcadores) para o editor mostrar dobrado.
+// Ferramenta de desenho: abre com a tela OLED como esta AGORA (o que o codigo
+// do editor ja desenha), para o aluno continuar/ajustar por cima. Ao concluir,
+// devolve so os pixels que ele alterou nesta sessao (x, y, cor) -- quem decide
+// como mesclar isso com o bloco de desenho ja existente no codigo e o App.tsx
+// (precisa do codigo atual, que este modal nao tem).
 // ============================================================================
 
 import { useEffect, useRef, useState } from 'react';
-import { buildDrawBlock } from '../data/drawBlock';
+
+export type PixelChange = [number, number, 0 | 1];
 
 interface Props {
   open: boolean;
   width: number;
   height: number;
-  onFinish: (code: string) => void;
+  initialFrame: Uint8Array; // tela atual (o que o codigo do editor ja desenha)
+  onFinish: (changes: PixelChange[]) => void;
   onClose: () => void;
 }
 
 type Tool = 'pen' | 'eraser';
 
-export function DrawModal({ open, width, height, onFinish, onClose }: Props) {
+export function DrawModal({ open, width, height, initialFrame, onFinish, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  // Buffer local de pixels (1 = aceso). Recriado quando abre/muda tamanho.
+  // Buffer local de pixels (1 = aceso), comeca igual a tela atual.
   const bufRef = useRef<Uint8Array>(new Uint8Array(width * height));
+  // Copia "antes" da sessao, usada so para calcular o que mudou ao concluir.
+  const baseRef = useRef<Uint8Array>(new Uint8Array(width * height));
   const [tool, setTool] = useState<Tool>('pen');
   const [, forceRender] = useState(0); // para atualizar o contador de pixels
   const paintingRef = useRef(false);
@@ -30,13 +36,19 @@ export function DrawModal({ open, width, height, onFinish, onClose }: Props) {
   // Escala para caber confortavelmente (~840px de largura).
   const scale = Math.max(4, Math.round(840 / width));
 
-  // Reseta o buffer ao abrir.
+  // Carrega a tela atual como ponto de partida ao abrir.
   useEffect(() => {
     if (open) {
-      bufRef.current = new Uint8Array(width * height);
+      const expected = width * height;
+      const src = initialFrame.length === expected ? initialFrame : new Uint8Array(expected);
+      bufRef.current = Uint8Array.from(src);
+      baseRef.current = Uint8Array.from(src);
       draw();
       forceRender((n) => n + 1);
     }
+    // Nao inclui initialFrame nas deps: queremos capturar a tela so no instante
+    // em que o modal abre, sem resetar o desenho do aluno se o quadro mudar
+    // (ex: uma animacao rodando) enquanto a ferramenta estiver aberta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, width, height]);
 
@@ -82,7 +94,20 @@ export function DrawModal({ open, width, height, onFinish, onClose }: Props) {
 
   if (!open) return null;
 
-  const count = bufRef.current.reduce((s, v) => s + v, 0);
+  // So os pixels que mudaram em relacao a tela de quando o modal abriu.
+  function computeChanges(): PixelChange[] {
+    const buf = bufRef.current;
+    const base = baseRef.current;
+    const changes: PixelChange[] = [];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const i = y * width + x;
+        if (buf[i] !== base[i]) changes.push([x, y, buf[i] as 0 | 1]);
+      }
+    }
+    return changes;
+  }
+  const changedCount = computeChanges().length;
 
   function clearAll() {
     bufRef.current = new Uint8Array(width * height);
@@ -91,14 +116,8 @@ export function DrawModal({ open, width, height, onFinish, onClose }: Props) {
   }
 
   function finish() {
-    const pixels: Array<[number, number]> = [];
-    const buf = bufRef.current;
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        if (buf[y * width + x]) pixels.push([x, y]);
-      }
-    }
-    onFinish(buildDrawBlock(pixels));
+    const changes = computeChanges();
+    if (changes.length > 0) onFinish(changes);
     onClose();
   }
 
@@ -114,7 +133,7 @@ export function DrawModal({ open, width, height, onFinish, onClose }: Props) {
           <button className={'btn' + (tool === 'pen' ? ' btn-primary' : '')} onClick={() => setTool('pen')}>✏️ Lapis</button>
           <button className={'btn' + (tool === 'eraser' ? ' btn-primary' : '')} onClick={() => setTool('eraser')}>🩹 Borracha</button>
           <button className="btn" onClick={clearAll}>🗑 Limpar</button>
-          <span className="draw-count">{count} pixel(s)</span>
+          <span className="draw-count">{changedCount} alteracao(oes)</span>
         </div>
 
         <div className="draw-canvas-box">
@@ -129,7 +148,7 @@ export function DrawModal({ open, width, height, onFinish, onClose }: Props) {
         </div>
 
         <div className="modal-actions">
-          <button className="btn btn-primary" onClick={finish} disabled={count === 0}>✓ Concluir e gerar codigo</button>
+          <button className="btn btn-primary" onClick={finish} disabled={changedCount === 0}>✓ Concluir e gerar codigo</button>
           <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
         </div>
       </div>
