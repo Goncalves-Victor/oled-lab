@@ -80,6 +80,11 @@ export default function App() {
   const [customExamples, setCustomExamples] = useState<Example[]>(() => (userName ? [] : loadCustomExamples()));
   const [cloudStatus, setCloudStatus] = useState<CloudStatus>('idle');
   const lastSyncedJsonRef = useRef<string | null>(null);
+  // So permite auto-salvar DEPOIS que a primeira leitura daquele nome chegou.
+  // Evita que o estado inicial vazio ([]) seja escrito antes da carga da nuvem
+  // -- como o Firebase apaga o no ao receber lista vazia, isso apagaria os
+  // exemplos que estavam salvos ("salvo, aparece e some").
+  const cloudReadyRef = useRef(false);
 
   // Modais.
   const [exportOpen, setExportOpen] = useState(false);
@@ -129,6 +134,7 @@ export default function App() {
   // senao um nome novo "puxaria" exemplos de outra pessoa por engano.
   // Ao apagar o nome, volta a mostrar a lista local generica.
   useEffect(() => {
+    cloudReadyRef.current = false; // ainda nao carregou este nome
     if (!userName) {
       setCloudStatus('idle');
       setCustomExamples(loadCustomExamples());
@@ -140,11 +146,13 @@ export default function App() {
       userName,
       (examples) => {
         lastSyncedJsonRef.current = JSON.stringify(examples);
+        cloudReadyRef.current = true;
         setCustomExamples(examples);
         setCloudStatus('saved');
       },
       () => {
         lastSyncedJsonRef.current = JSON.stringify([]);
+        cloudReadyRef.current = true;
         setCustomExamples([]);
         setCloudStatus('idle');
       },
@@ -158,6 +166,7 @@ export default function App() {
   // que acabou de chegar da propria nuvem (eco do listener acima).
   useEffect(() => {
     if (!userName) return;
+    if (!cloudReadyRef.current) return; // espera a carga inicial da nuvem
     const json = JSON.stringify(customExamples);
     if (json === lastSyncedJsonRef.current) return;
     setCloudStatus('syncing');
