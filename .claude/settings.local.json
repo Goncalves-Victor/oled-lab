@@ -8,7 +8,13 @@
       "Bash(curl -s -o /dev/null -w \"5174 HTTP %{http_code}\\\\n\" http://localhost:5174/)",
       "Bash(curl -s http://localhost:5174/src/main.tsx)",
       "PowerShell($p = \\(Get-NetTCPConnection -LocalPort 5174 -State Listen -ErrorAction SilentlyContinue\\).OwningProcess; if \\($p\\) { Stop-Process -Id $p -Force; \"Encerrado PID $p \\(porta 5174\\)\" } else { \"Nada na 5174\" })",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(curl -s https://api.github.com/repos/Goncalves-Victor/oled-lab/actions/runs?per_page=5)",
+      "Bash(curl -s https://api.github.com/repos/Goncalves-Victor/oled-lab/actions/runs/28192900013/jobs)",
+      "Bash(curl -sL https://api.github.com/repos/Goncalves-Victor/oled-lab/actions/jobs/83511895871/logs -o /tmp/job.log -w \"%{http_code}\\\\n\")",
+      "Read(//tmp/**)"
     ]
   }
 }

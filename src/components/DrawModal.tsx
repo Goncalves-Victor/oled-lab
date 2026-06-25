@@ -30,6 +30,7 @@ export function DrawModal({ open, width, height, initialFrame, onFinish, onClose
   // Copia "antes" da sessao, usada so para calcular o que mudou ao concluir.
   const baseRef = useRef<Uint8Array>(new Uint8Array(width * height));
   const [tool, setTool] = useState<Tool>('pen');
+  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
   const [, forceRender] = useState(0); // para atualizar o contador de pixels
   const paintingRef = useRef(false);
 
@@ -80,16 +81,28 @@ export function DrawModal({ open, width, height, initialFrame, onFinish, onClose
     ctx.stroke();
   }
 
-  function paintAt(clientX: number, clientY: number) {
+  // Converte um ponto do mouse/toque em coordenada de pixel (ou null se fora da tela).
+  function coordsAt(clientX: number, clientY: number): { x: number; y: number } | null {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor(((clientX - rect.left) / rect.width) * width);
     const y = Math.floor(((clientY - rect.top) / rect.height) * height);
-    if (x < 0 || x >= width || y < 0 || y >= height) return;
-    bufRef.current[y * width + x] = tool === 'pen' ? 1 : 0;
+    if (x < 0 || x >= width || y < 0 || y >= height) return null;
+    return { x, y };
+  }
+
+  function paintAt(clientX: number, clientY: number) {
+    const p = coordsAt(clientX, clientY);
+    if (!p) return;
+    bufRef.current[p.y * width + p.x] = tool === 'pen' ? 1 : 0;
     draw();
     forceRender((n) => n + 1);
+  }
+
+  function handlePointerMove(clientX: number, clientY: number) {
+    setHover(coordsAt(clientX, clientY));
+    if (paintingRef.current) paintAt(clientX, clientY);
   }
 
   if (!open) return null;
@@ -141,10 +154,14 @@ export function DrawModal({ open, width, height, initialFrame, onFinish, onClose
             ref={canvasRef}
             className="draw-canvas"
             onPointerDown={(e) => { paintingRef.current = true; e.currentTarget.setPointerCapture(e.pointerId); paintAt(e.clientX, e.clientY); }}
-            onPointerMove={(e) => { if (paintingRef.current) paintAt(e.clientX, e.clientY); }}
+            onPointerMove={(e) => handlePointerMove(e.clientX, e.clientY)}
             onPointerUp={() => { paintingRef.current = false; }}
-            onPointerLeave={() => { paintingRef.current = false; }}
+            onPointerLeave={() => { paintingRef.current = false; setHover(null); }}
           />
+        </div>
+
+        <div className="coord-bar">
+          {hover ? `x: ${hover.x}  y: ${hover.y}` : '-'}
         </div>
 
         <div className="modal-actions">
