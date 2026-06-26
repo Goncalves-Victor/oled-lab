@@ -91,7 +91,7 @@ Fluxo: **editor → parser → runner → framebuffer → canvas**.
   | `delay(ms)` | `{ kind: 'delay', ms }` | pausa e agenda continuação (escalada pela velocidade) |
 
 - **ExecContext** (`commands.ts`): estado mutável durante a execução —
-  `fb` (framebuffer), `cursor`, `textSize`, `textColor`, `strokeWidth`. Criado por
+  `fb` (framebuffer), `cursor`, `textSize`, `textColor`. Criado por
   `createContext(width, height)` e recriado a cada `run()`.
 - **Sem `eval()`**: o parser é proposital. Nunca introduza `eval`/`Function` para
   executar o código do aluno — quebra a segurança e a didática do projeto.
@@ -106,14 +106,6 @@ fixos (que continuam existindo só como **padrão**, 128×64). `SettingsModal`
 (ícone ⚙ no cabeçalho) deixa escolher entre presets (128×64, 128×32) ou
 personalizado (8–256 px). Trocar o tamanho reseta a simulação e roda o código
 de novo no novo tamanho (`App.tsx`, `useEffect` em `[size]`).
-
-### Espessura de traço (`setStrokeWidth`)
-
-`display.setStrokeWidth(n)` muda `ctx.strokeWidth`, usado por `drawLine`,
-`drawRect`, `drawCircle`, `drawRoundRect` em `drawing.ts`. Linhas desenham
-`n` cópias paralelas deslocadas perpendicularmente; formas fechadas desenham
-`n` cópias concêntricas crescendo para dentro. Comandos de preenchimento
-(`fillRect`, `fillCircle`, `fillRoundRect`) não são afetados (já preenchem tudo).
 
 ### Modo loop (`void loop()` do Arduino)
 
@@ -189,10 +181,10 @@ para o aluno ajustar por cima com lápis/borracha. Pontos-chave:
 
 ### Documentação com filtros por categoria (`FunctionHelp`)
 
-`data/functionDocs.ts` define `DocCategory` (`'Controle' | 'Formas' | 'Texto' |
-'Estilo'`) e cada `FunctionDoc` tem uma categoria. `FunctionHelp` mostra pílulas
-de filtro (Todas + cada categoria, com contador) e uma tag colorida por
-categoria em cada cartão.
+`data/functionDocs.ts` define `DocCategory` (`'Controle' | 'Formas' | 'Texto'`)
+e cada `FunctionDoc` tem uma categoria. `FunctionHelp` mostra pílulas de filtro
+(Todas + cada categoria, com contador) e uma tag colorida por categoria em cada
+cartão.
 
 ### Exportar .ino (`ExportModal` + `buildIno`)
 
@@ -254,9 +246,9 @@ Cores aceitas: `SSD1306_WHITE`/`1` (acende) e `SSD1306_BLACK`/`0` (apaga) —
 mapeadas em `parser.ts` (`COLOR_TOKENS`). Use os helpers `num()` e `col()` de
 `commands.ts` ao ler argumentos.
 
-Comandos já implementados: `clearDisplay`, `display`, `delay`, `setStrokeWidth`,
-`drawPixel`, `drawLine`, `drawRect`, `fillRect`, `drawCircle`, `fillCircle`,
-`drawRoundRect`, `fillRoundRect`, `setCursor`, `setTextSize`, `print`, `println`.
+Comandos já implementados: `clearDisplay`, `display`, `delay`, `drawPixel`,
+`drawLine`, `drawRect`, `fillRect`, `drawCircle`, `fillCircle`, `drawRoundRect`,
+`fillRoundRect`, `setCursor`, `setTextSize`, `print`, `println`.
 
 Comandos planejados (ver README): `drawTriangle`, `fillTriangle`, `drawBitmap`,
 `setTextColor`, `invertDisplay`.

@@ -7,10 +7,10 @@
 // Para documentar um comando novo, adicione um objeto aqui.
 // ============================================================================
 
-export type DocCategory = 'Controle' | 'Formas' | 'Texto' | 'Estilo';
+export type DocCategory = 'Controle' | 'Formas' | 'Texto';
 
 // Ordem em que as categorias aparecem nos filtros.
-export const DOC_CATEGORIES: DocCategory[] = ['Controle', 'Formas', 'Texto', 'Estilo'];
+export const DOC_CATEGORIES: DocCategory[] = ['Controle', 'Formas', 'Texto'];
 
 export interface ParamDoc {
   name: string;
@@ -184,12 +184,5 @@ export const FUNCTION_DOCS: FunctionDoc[] = [
     description: 'Escreve texto e DEPOIS pula uma linha.',
     params: [{ name: 'texto', description: 'Texto entre aspas duplas.' }],
     example: 'display.println("Ola!");',
-  },
-  {
-    name: 'display.setStrokeWidth(espessura)',
-    category: 'Estilo',
-    description: 'Define a espessura do traco para drawLine, drawRect, drawCircle e drawRoundRect. Valor 1 e o padrao (1 pixel, igual ao hardware). A espessura cresce para dentro nas formas fechadas.',
-    params: [{ name: 'espessura', description: 'Numero inteiro >= 1. Ex.: 2, 3, 4...' }],
-    example: 'display.setStrokeWidth(3);',
   },
 ];

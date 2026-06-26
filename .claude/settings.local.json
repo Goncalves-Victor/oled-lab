@@ -14,7 +14,8 @@
       "Bash(curl -s https://api.github.com/repos/Goncalves-Victor/oled-lab/actions/runs?per_page=5)",
       "Bash(curl -s https://api.github.com/repos/Goncalves-Victor/oled-lab/actions/runs/28192900013/jobs)",
       "Bash(curl -sL https://api.github.com/repos/Goncalves-Victor/oled-lab/actions/jobs/83511895871/logs -o /tmp/job.log -w \"%{http_code}\\\\n\")",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(npm run *)"
     ]
   }
 }

@@ -498,7 +498,6 @@ body {
 .help-tag-Controle { color: #ffce5a; border-color: #6b5a1f; }
 .help-tag-Formas { color: #6aa0ff; border-color: #2f4d8a; }
 .help-tag-Texto { color: #36d39a; border-color: #1f6b50; }
-.help-tag-Estilo { color: #ff8db4; border-color: #7a2f4d; }
 
 .help-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; max-height: 70vh; overflow: auto; }
 .help-card {
@@ -659,6 +658,11 @@ body {
 /* ---------- Ferramenta de desenho ---------- */
 .draw-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .draw-count { margin-left: auto; font-size: 13px; color: var(--muted); font-family: var(--mono); }
+
+/* Espessura do pincel: barra deslizante */
+.brush-field { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.brush-range { width: 120px; accent-color: var(--accent); cursor: pointer; }
+.brush-value { font-family: var(--mono); color: var(--text); min-width: 34px; }
 .draw-canvas-box {
   display: flex;
   justify-content: center;

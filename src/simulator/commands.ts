@@ -29,7 +29,6 @@ export interface ExecContext {
   cursor: { x: number; y: number };
   textSize: number;
   textColor: PixelColor; // padrao 1 (branco). Reservado para setTextColor futuro.
-  strokeWidth: number;   // espessura do traco (1 = padrao, igual ao hardware)
 }
 
 /** Sinal opcional que um comando devolve ao runner. */
@@ -58,7 +57,6 @@ export function createContext(width: number = OLED_WIDTH, height: number = OLED_
     cursor: { x: 0, y: 0 },
     textSize: 1,
     textColor: 1,
-    strokeWidth: 1,
   };
 }
 
@@ -114,14 +112,6 @@ export const COMMANDS: Record<string, Command> = {
     },
   },
 
-  'display.setStrokeWidth': {
-    name: 'display.setStrokeWidth',
-    argCount: 1,
-    execute(ctx, a) {
-      ctx.strokeWidth = Math.max(1, Math.floor(num(a[0])));
-    },
-  },
-
   'display.drawPixel': {
     name: 'display.drawPixel',
     argCount: 3,
@@ -134,7 +124,7 @@ export const COMMANDS: Record<string, Command> = {
     name: 'display.drawLine',
     argCount: 5,
     execute(ctx, a) {
-      drawLine(ctx.fb, num(a[0]), num(a[1]), num(a[2]), num(a[3]), col(a[4]), ctx.strokeWidth);
+      drawLine(ctx.fb, num(a[0]), num(a[1]), num(a[2]), num(a[3]), col(a[4]));
     },
   },
 
@@ -142,7 +132,7 @@ export const COMMANDS: Record<string, Command> = {
     name: 'display.drawRect',
     argCount: 5,
     execute(ctx, a) {
-      drawRect(ctx.fb, num(a[0]), num(a[1]), num(a[2]), num(a[3]), col(a[4]), ctx.strokeWidth);
+      drawRect(ctx.fb, num(a[0]), num(a[1]), num(a[2]), num(a[3]), col(a[4]));
     },
   },
 
@@ -158,7 +148,7 @@ export const COMMANDS: Record<string, Command> = {
     name: 'display.drawCircle',
     argCount: 4,
     execute(ctx, a) {
-      drawCircle(ctx.fb, num(a[0]), num(a[1]), num(a[2]), col(a[3]), ctx.strokeWidth);
+      drawCircle(ctx.fb, num(a[0]), num(a[1]), num(a[2]), col(a[3]));
     },
   },
 
@@ -174,7 +164,7 @@ export const COMMANDS: Record<string, Command> = {
     name: 'display.drawRoundRect',
     argCount: 6,
     execute(ctx, a) {
-      drawRoundRect(ctx.fb, num(a[0]), num(a[1]), num(a[2]), num(a[3]), num(a[4]), col(a[5]), ctx.strokeWidth);
+      drawRoundRect(ctx.fb, num(a[0]), num(a[1]), num(a[2]), num(a[3]), num(a[4]), col(a[5]));
     },
   },
 

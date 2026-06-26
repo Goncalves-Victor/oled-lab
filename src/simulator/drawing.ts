@@ -24,8 +24,8 @@ export function drawFastVLine(fb: Framebuffer, x: number, y: number, h: number, 
   for (let k = 0; k < h; k++) fb.setPixel(x, y + k, color);
 }
 
-/** Linha fina de 1px (Bresenham) -- usada internamente. */
-function drawLineThin(fb: Framebuffer, x0: number, y0: number, x1: number, y1: number, color: PixelColor): void {
+/** Linha (Bresenham). */
+export function drawLine(fb: Framebuffer, x0: number, y0: number, x1: number, y1: number, color: PixelColor): void {
   x0 = i(x0); y0 = i(y0); x1 = i(x1); y1 = i(y1);
   const dx = Math.abs(x1 - x0);
   const dy = -Math.abs(y1 - y0);
@@ -42,39 +42,12 @@ function drawLineThin(fb: Framebuffer, x0: number, y0: number, x1: number, y1: n
   }
 }
 
-/**
- * Linha com espessura (stroke). Desenha varias linhas Bresenham paralelas
- * deslocadas perpendicularmente ao vetor principal, centradas no traço.
- */
-export function drawLine(
-  fb: Framebuffer,
-  x0: number, y0: number,
-  x1: number, y1: number,
-  color: PixelColor,
-  stroke = 1,
-): void {
-  stroke = Math.max(1, Math.round(stroke));
-  if (stroke === 1) { drawLineThin(fb, x0, y0, x1, y1, color); return; }
-  const dx = x1 - x0, dy = y1 - y0;
-  const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  // Vetor perpendicular unitario.
-  const px = -dy / len, py = dx / len;
-  const half = (stroke - 1) / 2;
-  for (let s = -half; s <= half; s++) {
-    drawLineThin(fb, x0 + px * s, y0 + py * s, x1 + px * s, y1 + py * s, color);
-  }
-}
-
-/** Contorno de retangulo com espessura opcional (cresce para dentro). */
-export function drawRect(fb: Framebuffer, x: number, y: number, w: number, h: number, color: PixelColor, stroke = 1): void {
-  stroke = Math.max(1, Math.round(stroke));
-  for (let s = 0; s < stroke; s++) {
-    const xi = x + s, yi = y + s, wi = Math.max(1, w - s * 2), hi = Math.max(1, h - s * 2);
-    drawFastHLine(fb, xi, yi, wi, color);
-    drawFastHLine(fb, xi, yi + hi - 1, wi, color);
-    drawFastVLine(fb, xi, yi, hi, color);
-    drawFastVLine(fb, xi + wi - 1, yi, hi, color);
-  }
+/** Contorno de retangulo. */
+export function drawRect(fb: Framebuffer, x: number, y: number, w: number, h: number, color: PixelColor): void {
+  drawFastHLine(fb, x, y, w, color);
+  drawFastHLine(fb, x, y + h - 1, w, color);
+  drawFastVLine(fb, x, y, h, color);
+  drawFastVLine(fb, x + w - 1, y, h, color);
 }
 
 /** Retangulo preenchido. */
@@ -82,13 +55,8 @@ export function fillRect(fb: Framebuffer, x: number, y: number, w: number, h: nu
   for (let row = 0; row < h; row++) drawFastHLine(fb, x, y + row, w, color);
 }
 
-/** Contorno de circulo com espessura opcional (cresce para dentro). */
-export function drawCircle(fb: Framebuffer, x0: number, y0: number, r: number, color: PixelColor, stroke = 1): void {
-  stroke = Math.max(1, Math.round(stroke));
-  for (let s = 0; s < stroke; s++) drawCircleThin(fb, x0, y0, Math.max(0, i(r) - s), color);
-}
-
-function drawCircleThin(fb: Framebuffer, x0: number, y0: number, r: number, color: PixelColor): void {
+/** Contorno de circulo (ponto medio). */
+export function drawCircle(fb: Framebuffer, x0: number, y0: number, r: number, color: PixelColor): void {
   r = i(r);
   let f = 1 - r;
   let ddF_x = 1;
@@ -171,23 +139,19 @@ export function fillCircle(fb: Framebuffer, x0: number, y0: number, r: number, c
   fillCircleHelper(fb, x0, y0, r, 3, 0, color);
 }
 
-/** Contorno de retangulo com cantos arredondados e espessura opcional (cresce para dentro). */
-export function drawRoundRect(fb: Framebuffer, x: number, y: number, w: number, h: number, r: number, color: PixelColor, stroke = 1): void {
-  stroke = Math.max(1, Math.round(stroke));
-  for (let s = 0; s < stroke; s++) {
-    const xi = x + s, yi = y + s, wi = Math.max(1, w - s * 2), hi = Math.max(1, h - s * 2);
-    const maxRadius = Math.floor(Math.min(wi, hi) / 2);
-    const ri = Math.min(i(r) - s, maxRadius);
-    if (ri < 0) { drawRect(fb, xi, yi, wi, hi, color); continue; }
-    drawFastHLine(fb, xi + ri, yi, wi - 2 * ri, color);
-    drawFastHLine(fb, xi + ri, yi + hi - 1, wi - 2 * ri, color);
-    drawFastVLine(fb, xi, yi + ri, hi - 2 * ri, color);
-    drawFastVLine(fb, xi + wi - 1, yi + ri, hi - 2 * ri, color);
-    drawCircleHelper(fb, xi + ri, yi + ri, ri, 1, color);
-    drawCircleHelper(fb, xi + wi - ri - 1, yi + ri, ri, 2, color);
-    drawCircleHelper(fb, xi + wi - ri - 1, yi + hi - ri - 1, ri, 4, color);
-    drawCircleHelper(fb, xi + ri, yi + hi - ri - 1, ri, 8, color);
-  }
+/** Contorno de retangulo com cantos arredondados. */
+export function drawRoundRect(fb: Framebuffer, x: number, y: number, w: number, h: number, r: number, color: PixelColor): void {
+  const maxRadius = Math.floor(Math.min(w, h) / 2);
+  const ri = Math.min(i(r), maxRadius);
+  if (ri < 0) { drawRect(fb, x, y, w, h, color); return; }
+  drawFastHLine(fb, x + ri, y, w - 2 * ri, color);
+  drawFastHLine(fb, x + ri, y + h - 1, w - 2 * ri, color);
+  drawFastVLine(fb, x, y + ri, h - 2 * ri, color);
+  drawFastVLine(fb, x + w - 1, y + ri, h - 2 * ri, color);
+  drawCircleHelper(fb, x + ri, y + ri, ri, 1, color);
+  drawCircleHelper(fb, x + w - ri - 1, y + ri, ri, 2, color);
+  drawCircleHelper(fb, x + w - ri - 1, y + h - ri - 1, ri, 4, color);
+  drawCircleHelper(fb, x + ri, y + h - ri - 1, ri, 8, color);
 }
 
 /** Retangulo preenchido com cantos arredondados (retangulo central + 2 metades de circulo). */

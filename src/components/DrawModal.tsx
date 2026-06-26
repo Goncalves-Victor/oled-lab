@@ -30,9 +30,13 @@ export function DrawModal({ open, width, height, initialFrame, onFinish, onClose
   // Copia "antes" da sessao, usada so para calcular o que mudou ao concluir.
   const baseRef = useRef<Uint8Array>(new Uint8Array(width * height));
   const [tool, setTool] = useState<Tool>('pen');
+  const [brushSize, setBrushSize] = useState(1); // espessura do pincel, em pixels (lapis e borracha)
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
   const [, forceRender] = useState(0); // para atualizar o contador de pixels
   const paintingRef = useRef(false);
+
+  const MIN_BRUSH = 1;
+  const MAX_BRUSH = 10;
 
   // Escala para caber confortavelmente (~840px de largura).
   const scale = Math.max(4, Math.round(840 / width));
@@ -95,7 +99,17 @@ export function DrawModal({ open, width, height, initialFrame, onFinish, onClose
   function paintAt(clientX: number, clientY: number) {
     const p = coordsAt(clientX, clientY);
     if (!p) return;
-    bufRef.current[p.y * width + p.x] = tool === 'pen' ? 1 : 0;
+    const value = tool === 'pen' ? 1 : 0;
+    // Pincel quadrado de brushSize x brushSize, centrado no ponto (1 = so o pixel).
+    const before = Math.floor((brushSize - 1) / 2);
+    const after = Math.ceil((brushSize - 1) / 2);
+    for (let dy = -before; dy <= after; dy++) {
+      for (let dx = -before; dx <= after; dx++) {
+        const x = p.x + dx, y = p.y + dy;
+        if (x < 0 || x >= width || y < 0 || y >= height) continue;
+        bufRef.current[y * width + x] = value;
+      }
+    }
     draw();
     forceRender((n) => n + 1);
   }
@@ -146,6 +160,18 @@ export function DrawModal({ open, width, height, initialFrame, onFinish, onClose
           <button className={'btn' + (tool === 'pen' ? ' btn-primary' : '')} onClick={() => setTool('pen')}>✏️ Lapis</button>
           <button className={'btn' + (tool === 'eraser' ? ' btn-primary' : '')} onClick={() => setTool('eraser')}>🩹 Borracha</button>
           <button className="btn" onClick={clearAll}>🗑 Limpar</button>
+          <label className="brush-field" title="Espessura do pincel (lapis e borracha)">
+            Espessura
+            <input
+              type="range"
+              className="brush-range"
+              min={MIN_BRUSH}
+              max={MAX_BRUSH}
+              value={brushSize}
+              onChange={(e) => setBrushSize(Number(e.target.value))}
+            />
+            <span className="brush-value">{brushSize}px</span>
+          </label>
           <span className="draw-count">{changedCount} alteracao(oes)</span>
         </div>
 
